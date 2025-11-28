@@ -40,3 +40,4 @@ lib/
 .env                # Local environment variables and credentials
 *.key               # Private cryptographic keys
 delete_build.html
+delete_build.js
