@@ -1,7 +1,5 @@
-// Supabase Initialization
-const SUPABASE_URL = 'https://fjyfuigdesprdtveqnjz.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqeWZ1aWdkZXNwcmR0dmVxbmp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyMDE3MDMsImV4cCI6MjA3OTc3NzcwM30.B1rQAGRJjWmTnN2eX8RcwlppsoYyEl5Th2syyLbcjig';
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Supabase Initialization handled in config.js
+
 
 // DOM Elements
 const calibrationSelect = document.getElementById('calibration-select');
@@ -180,7 +178,7 @@ function collectFormData() {
 
     if (itemVal) {
       const gearObj = {
-        slot_name: slot, // You might need to capitalize or format this to match DB enum if strictly enforced
+        slot_name: slot,
         mod_id: modVal || null,
         hide_material_id: hideVal || null
       };

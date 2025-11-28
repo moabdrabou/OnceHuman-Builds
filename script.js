@@ -1,7 +1,5 @@
-// Supabase Initialization
-const SUPABASE_URL = 'https://fjyfuigdesprdtveqnjz.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqeWZ1aWdkZXNwcmR0dmVxbmp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyMDE3MDMsImV4cCI6MjA3OTc3NzcwM30.B1rQAGRJjWmTnN2eX8RcwlppsoYyEl5Th2syyLbcjig';
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Supabase Initialization handled in config.js
+
 
 // Icons (Simple SVGs)
 const icons = {
@@ -99,9 +97,160 @@ async function fetchBuilds() {
   }
 }
 
+// Admin Login & UI Logic
+const adminLoginLink = document.getElementById('admin-login-link');
+const loginModal = document.getElementById('login-modal');
+const closeModal = document.getElementById('close-modal');
+const loginForm = document.getElementById('login-form');
+const loginError = document.getElementById('login-error');
+const addBuildBtn = document.getElementById('add-build-btn');
+const deleteBuildBtn = document.getElementById('delete-build-btn');
+const requestDataBtn = document.getElementById('request-data-btn');
+
+// Show Modal
+adminLoginLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  loginModal.classList.remove('hidden');
+});
+
+// Hide Modal
+closeModal.addEventListener('click', () => {
+  loginModal.classList.add('hidden');
+  loginError.textContent = '';
+  loginForm.reset();
+});
+
+// Close modal if clicking outside
+window.addEventListener('click', (e) => {
+  if (e.target === loginModal) {
+    loginModal.classList.add('hidden');
+    loginError.textContent = '';
+    loginForm.reset();
+  }
+});
+
+// Handle Login
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  loginError.textContent = 'Logging in...';
+
+  console.log('=== LOGIN ATTEMPT ===');
+  console.log('Email:', email);
+
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
+
+    console.log('Login response:', { data, error });
+
+    if (error) throw error;
+
+    console.log('Login successful! User:', data.user.email);
+    console.log('Session:', data.session);
+    console.log('Session stored? Check localStorage:', localStorage.getItem('supabase.auth.token'));
+
+    // Check Role
+    const isAdmin = await checkUserRole(data.user);
+    console.log('Is Admin?', isAdmin);
+
+    if (isAdmin) {
+      loginModal.classList.add('hidden');
+      loginForm.reset();
+      updateUIBasedOnRole(true);
+
+      // Verify session one more time before showing success
+      const { data: sessionCheck } = await supabaseClient.auth.getSession();
+      console.log('Session after login:', sessionCheck.session);
+
+      alert('Logged in as Admin');
+    } else {
+      throw new Error('Not authorized as Admin');
+    }
+
+  } catch (err) {
+    console.error('Login error:', err);
+    loginError.textContent = err.message || 'Login failed';
+    // Optional: Sign out if role check failed
+    if (err.message === 'Not authorized as Admin') {
+      await supabaseClient.auth.signOut();
+    }
+  }
+});
+
+// Check User Role
+async function checkUserRole(user) {
+  if (!user) return false;
+
+  console.log('Checking role for user:', user.email);
+  console.log('User Metadata:', user.user_metadata);
+
+  // 1. Check user_metadata for is_admin flag
+  if (user.user_metadata && user.user_metadata.is_admin === true) {
+    console.log('User is admin (metadata)');
+    return true;
+  }
+
+  // 2. Fallback: Check hardcoded admin email
+  const HARDCODED_ADMIN_EMAIL = 'onceh6793@gmail.com';
+  if (user.email === HARDCODED_ADMIN_EMAIL) {
+    console.log('User is admin (email match)');
+    return true;
+  }
+
+  console.log('User is NOT admin');
+  return false;
+}
+
+// Update UI
+function updateUIBasedOnRole(isAdmin) {
+  if (isAdmin) {
+    adminLoginLink.textContent = 'Logout';
+    adminLoginLink.onclick = handleLogout; // Change click handler
+
+    addBuildBtn.classList.remove('hidden');
+    deleteBuildBtn.classList.remove('hidden');
+
+    // Hide Request button for admins
+    requestDataBtn.classList.add('hidden');
+
+  } else {
+    adminLoginLink.textContent = 'Admin Login';
+    adminLoginLink.onclick = (e) => { // Reset click handler
+      e.preventDefault();
+      loginModal.classList.remove('hidden');
+    };
+
+    addBuildBtn.classList.add('hidden');
+    deleteBuildBtn.classList.add('hidden');
+
+    // Show Request button for non-admins
+    requestDataBtn.classList.remove('hidden');
+  }
+}
+
+async function handleLogout(e) {
+  e.preventDefault();
+  await supabaseClient.auth.signOut();
+  updateUIBasedOnRole(false);
+  alert('Logged out');
+}
+
 // Initialize
 async function init() {
   console.log('Initializing build viewer...');
+
+  // Check current session
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) {
+    const isAdmin = await checkUserRole(session.user);
+    updateUIBasedOnRole(isAdmin);
+  } else {
+    updateUIBasedOnRole(false);
+  }
 
   // Reset dropdown to default and hide details panel
   selector.value = '';

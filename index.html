@@ -14,10 +14,34 @@
     <div class="container">
         <h1>Build Viewer</h1>
 
+        <!-- Admin Login Link -->
+        <a href="#" id="admin-login-link" class="admin-login-link">Admin Login</a>
+
+        <!-- Login Modal -->
+        <div id="login-modal" class="modal hidden">
+            <div class="modal-content">
+                <span id="close-modal" class="close">&times;</span>
+                <h2>Admin Login</h2>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                    <p id="login-error" class="error-message"></p>
+                </form>
+            </div>
+        </div>
+
         <div class="control-panel">
             <div class="nav-buttons">
-                <a href="add_build.html" class="btn">Add Build</a>
-                <a href="request_data.html" class="btn">Request to add missing data</a>
+                <a href="add_build.html" id="add-build-btn" class="btn hidden">Add Build</a>
+                <a href="delete_build.html" id="delete-build-btn" class="btn hidden">Delete a Build</a>
+                <a href="request_data.html" id="request-data-btn" class="btn">Request to add missing data</a>
             </div>
             <label for="build-selector">Select a Build:</label>
             <select id="build-selector">
@@ -70,6 +94,7 @@
         </div>
     </div>
 
+    <script src="config.js"></script>
     <script src="script.js"></script>
 
 </body>

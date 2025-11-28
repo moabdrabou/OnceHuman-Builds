@@ -13,6 +13,9 @@
   <div class="container">
     <h1>Request Missing Data</h1>
 
+    <!-- Admin Login Link -->
+    <a href="#" id="admin-login-link" class="admin-login-link">Admin Login</a>
+
     <div class="control-panel">
       <a href="index.html" class="btn">Back to Home</a>
     </div>
@@ -30,6 +33,9 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
   <script>
     document.getElementById('request-form').addEventListener('submit', function (e) {
       e.preventDefault();
