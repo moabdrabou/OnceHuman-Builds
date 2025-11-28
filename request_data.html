@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Request Data - Game Build Viewer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>Request Missing Data</h1>
+
+    <div class="control-panel">
+      <a href="index.html" class="btn">Back to Home</a>
+    </div>
+
+    <div class="display-panel">
+      <div class="info-group">
+        <span class="label">Request Details</span>
+        <p>Please describe the missing data or build you would like to add. Clicking submit will open your email client.
+        </p>
+        <form id="request-form" class="request-form">
+          <textarea id="request-message" name="message" placeholder="Type your request here..." required></textarea>
+          <button type="submit" class="btn submit-btn">Submit Request</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('request-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const message = document.getElementById('request-message').value;
+      const user = 'onceh6793';
+      const domain = 'gmail.com';
+      const email = user + '@' + domain;
+      const subject = 'Missing Data Request';
+      const body = encodeURIComponent(message);
+      window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${body}`;
+    });
+  </script>
+
+</body>
+
+</html>
