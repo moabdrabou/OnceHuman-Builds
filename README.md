@@ -1,74 +1,195 @@
-# 🛠️ Once Human Build Tracker Database
+# 🎮 Once Human - Build Tracker
 
-## 🚀 Project Goal
+A web application for creating, viewing, and managing player builds for the game *Once Human*. Features admin authentication, role-based access control, and a fully normalized database structure.
 
-This database schema is designed to efficiently store and manage complex player build data for the game *Once Human*. The core objective is to achieve **high normalization** to ensure data integrity, prevent duplication, and allow for easy, centralized updates to master lists (Mods, Hides, Weapons, Cradle Overrides, etc.).
+## 🌟 Features
 
-This structure supports the complex requirements of linking multiple variable items (9 Gear, 8 Cradle Overrides, 3 Major Abilities) to a single reusable build definition.
+- **📖 Public Build Viewer**: Browse and view detailed game builds
+- **🔐 Admin Authentication**: Secure login using Supabase Auth
+- **➕ Add Builds**: Authenticated users can create new builds with detailed gear, abilities, and cradle configurations
+- **🗑️ Delete Builds**: Remove outdated or incorrect builds
+- **📝 Request Data**: Public form for users to request missing builds or data
+- **🛡️ Row-Level Security**: Database-level access control ensures data integrity
+- **📱 Responsive Design**: Dark themed UI that works across devices
 
-## 🗄️ Database Schema Overview (7 Tables)
+## 🏗️ Architecture
 
-The database consists of **four Master List tables** and **three Core/Junction tables**.
+### Frontend (Static HTML/JS)
+- **Static Pages**: Pure HTML/CSS/JavaScript (deployable to GitHub Pages)
+- **Supabase Client**: Uses CDN-loaded `@supabase/supabase-js` for database and auth
+- **Session Persistence**: localStorage-based authentication across pages
+- **Protected Routes**: Client-side guards for admin-only pages
 
-### Core & Junction Tables
+### Backend (Supabase)
+- **PostgreSQL Database**: Fully normalized schema with 11 tables
+- **Authentication**: Email/password login with session management
+- **Row-Level Security**: Public read access, authenticated write access
+- **Real-time Sync**: Automatic session restoration across page navigations
 
-These tables define the build itself and handle the Many-to-Many relationships.
+## 📊 Database Schema
 
-| Table Name | Purpose | Primary Key (PK) | Foreign Keys (FKs) |
-| :--- | :--- | :--- | :--- |
-| **`builds`** | Stores the core build identity (name, type). | `id` (UUID) | `calibration_id` (FK to `calibration`) |
-| **`build_gear`** | **Central Assignment Table.** Links the 9 gear slots (cloth + weapons) to the build and to the master item lists. | (`build_id`, `slot_name`) | `build_id`, `mod_id`, `hide_material_id`, `weapon_id`, `gear_set_id` |
-| **`build_ability_assignment`** | Links the 3 core Major Abilities (by rank) to the build. | (`build_id`, `ability_rank`) | `build_id`, `ability_master_id` |
-| **`build_cradle`** | Links the 8 variable Cradle Overrides (by slot) to the build. | (`build_id`, `item_slot`) | `build_id`, `cradle_item_id` |
+### Core Tables
+
+#### `Builds`
+Stores the core build identity.
+- **PK**: `id` (UUID)
+- **FK**: `calibration_id` → `calibration.id`
+- **Fields**: `build_name`, `calibration_id`
+
+#### `Build_Gear`
+Central assignment table linking 9 gear slots to builds.
+- **Composite PK**: `(build_id, slot_name)`
+- **FKs**: 
+  - `build_id` → `builds.id`
+  - `mod_id` → `mod_master_list.id`
+  - `hide_material_id` → `hide_master_list.id`
+  - `weapon_id` → `weapon_master_list.id` (for weapon slots)
+  - `gear_set_id` → `gear_set_master_list.id` (for armor slots)
+- **Slots**: `helmet`, `jacket`, `pants`, `boots`, `gloves`, `mask`, `weapon_1`, `weapon_2`, `melee`
+
+#### `Build_Cradle`
+Links 8 Cradle Override items to builds.
+- **Composite PK**: `(build_id, item_slot)`
+- **FKs**: 
+  - `build_id` → `builds.id`
+  - `cradle_item_id` → `cradle_master_list.id`
+
+#### `Build_Ability_Assignment`
+Links 3 major abilities (by rank) to builds.
+- **Composite PK**: `(build_id, ability_rank)`
+- **FKs**: 
+  - `build_id` → `builds.id`
+  - `ability_master_id` → `ability_master_list.id`
+
+### Master List Tables (Normalized Data)
+
+| Table | Purpose |
+|-------|---------|
+| `Calibration` | Weapon calibration setups |
+| `Cradle_Master_List` | Cradle override names |
+| `Mod_Master_List` | Mod names/suffixes |
+| `Hide_Master_List` | Hide material names |
+| `Weapon_Master_List` | Weapon names |
+| `Gear_Set_Master_List` | Gear set names |
+| `Ability_Master_List` | Core ability names |
+
+### Relationships
+
+```
+Builds (1) ──────────── (1) Calibration
+   │
+   ├──────── (1:N) ────── Build_Gear ──────── (N:1) ────── Gear_Set_Master_List
+   │                          │                                  Weapon_Master_List
+   │                          │                                  Mod_Master_List
+   │                          │                                  Hide_Master_List
+   │
+   ├──────── (1:N) ────── Build_Cradle ────── (N:1) ────── Cradle_Master_List
+   │
+   └──────── (1:N) ────── Build_Ability_Assignment ─ (N:1) ─ Ability_Master_List
+```
+
+**Key Design Principles:**
+1. **No Redundant Data**: All reusable data (mods, hides, weapons) stored once in master lists
+2. **Gear vs. Weapon**: Each `Build_Gear` row uses either `gear_set_id` (armor) OR `weapon_id` (weapons), never both
+3. **Calibration Reuse**: Multiple builds can reference the same calibration configuration
+
+## 🔐 Authentication & Security
+
+### User Roles
+- **Public Users**: Can view all builds and submit data requests
+- **Authenticated Users**: Can create and delete builds
+- **Admin Users**: (Future) Additional permissions via `user_metadata.is_admin`
+
+### Row-Level Security (RLS)
+All tables enforce PostgreSQL RLS policies:
+- **SELECT**: Public access (anyone can read)
+- **INSERT/UPDATE/DELETE**: Requires authentication (`auth.uid() IS NOT NULL`)
+
+### Protected Pages
+- `add_build.html`: Requires authentication
+- `delete_build.html`: Requires authentication
+- Unauthenticated access redirects to `index.html` with alert
+
+## 🚀 Local Development
+
+### Prerequisites
+- Python 3.x (for local server)
+- Modern web browser
+- Supabase account (already configured)
+
+### Running Locally
+
+**Important**: You must use an HTTP server (not `file://`) for session persistence to work.
+
+```bash
+# Navigate to project directory
+cd /path/to/OnceHuman-Builds
+
+# Start local server
+python3 -m http.server 8000
+
+# Open in browser
+# http://localhost:8000/index.html
+```
+
+**Why HTTP server is required**: The `file://` protocol isolates localStorage between HTML files for security. An HTTP server provides a common origin (`http://localhost:8000`) allowing session sharing across pages.
+
+## 📦 Deployment (GitHub Pages)
+
+```bash
+# 1. Commit changes
+git add .
+git commit -m "Deploy build tracker"
+
+# 2. Push to GitHub
+git push origin main
+
+# 3. Enable GitHub Pages
+# Go to repo Settings → Pages
+# Source: Deploy from branch 'main'
+# Folder: / (root)
+
+# 4. Access at:
+# https://[username].github.io/OnceHuman-Builds/
+```
+
+**Session Persistence on GitHub Pages**: Works automatically because all pages share the same `https://` origin.
+
+## 📁 File Structure
+
+```
+OnceHuman-Builds/
+├── index.html              # Main build viewer
+├── add_build.html          # Build creation form (protected)
+├── delete_build.html       # Build deletion interface (protected)
+├── request_data.html       # Public data request form
+├── config.js               # Supabase client initialization
+├── script.js               # Index page logic + admin auth
+├── auth.js                 # Shared auth logic + route guards
+├── add_build.js            # Add build form logic
+├── delete_build.js         # Delete build logic
+├── styles.css              # Dark theme styling
+└── README.md               # This file
+```
+
+## 🔧 Troubleshooting
+
+### Session Not Persisting
+- **Problem**: Login works on `index.html` but session is lost on other pages
+- **Solution**: Use HTTP server (`python3 -m http.server`), not `file://` protocol
+
+### RLS Errors (Code 42501)
+- **Problem**: "new row violates row-level security policy"
+- **Solution**: Ensure you're logged in and session is active. Check browser console for "Config.js - Session loaded: { hasSession: true }"
+
+### Protected Page Access
+- **Problem**: Can't access `add_build.html` or `delete_build.html`
+- **Solution**: Log in first on `index.html`. Session must be active.
+
+## 📝 License
+
+This project is for personal use and game build tracking.
 
 ---
 
-### Master List Tables (Reusable Data Pools)
-
-These tables contain the full, unique list of items and attributes that are referenced by the core build tables.
-
-| Table Name | Purpose | Data Size |
-| :--- | :--- | :--- |
-| **`calibration`** | **REUSABLE.** Stores the list of all unique Weapon Calibration setups (e.g., 'Rapid Shot + 2 Crit Rate'). | ~32 entries |
-| **`cradle_master_list`** | Stores the 25 unique Cradle Override names (e.g., 'Shield Protection', 'Tactical Combo'). | 25 entries |
-| **`mod_master_list`** | Stores all unique Mod names/suffixes (e.g., 'Deadshot (Violent)', 'Thunderclap'). | ~45 entries |
-| **`hide_master_list`** | Stores all unique hide material names (e.g., 'Lunar Wool', 'Polar Fox Skin', 'Cowhide'). | ~40 entries |
-| **`weapon_master_list`**| Stores all unique weapon names (e.g., 'SOCR - Outsider', 'Kukri'). | ~46 entries |
-| **`gear_set_master_list`**| Stores all unique gear set names and individual armor pieces (e.g., 'Lonewolf', 'Viper Mask'). | ~46 entries |
-| **`ability_master_list`** | Stores the names of core Substats (e.g., 'DMG against Great Ones', 'Crit Damage'). | 8 entries |
-
----
-
-## 🔗 Key Relationships and Normalization
-
-The schema is built around the principle of **no redundant data**.
-
-1.  **Gear Item vs. Weapon:** A row in `build_gear` uses **either** the `gear_set_id` (for armor/mask/etc. items) **OR** the `weapon_id` (for Weapon 1, 2, or 3), but never both (`NULL` in one column).
-2.  **Mods and Hides:** Every gear item references its specific Mod and Hide material by ID (`mod_id` and `hide_material_id`), ensuring consistent naming across the entire database.
-3.  **Calibration Reuse:** The `builds` table points to a single `calibration_id`, meaning multiple builds can instantly reuse the exact same calibration notes without duplicating the text.
-
-## 💾 Fetching a Complete Build
-
-To retrieve all information for a single build, you must execute a single query using nested `JOIN` operations:
-
-```sql
-SELECT
-    *,
-    calibration_setup:calibration_id (notes),
-    build_ability_assignment (
-        ability_rank,
-        ability_master:ability_master_id (ability_name)
-    ),
-    build_gear (
-        slot_name,
-        weapon_master:weapon_id (weapon_name, weapon_type),
-        gear_set_master:gear_set_id (set_name),
-        mod:mod_id (mod_name),
-        hide_material:hide_material_id (material_name)
-    ),
-    build_cradle (
-        item_slot, 
-        cradle_item:cradle_item_id (item_name)
-    )
-FROM builds
-WHERE build_name = 'Phoenix Sentinel';
+**Built with**: Vanilla JavaScript • Supabase • PostgreSQL
