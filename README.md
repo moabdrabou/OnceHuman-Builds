@@ -2,6 +2,8 @@
 
 A web application for creating, viewing, and managing player builds for the game *Once Human*. Features admin authentication, role-based access control, and a fully normalized database structure.
 
+**🌐 Live Demo**: [https://ohbuilds.moabdrabou.dev/](https://ohbuilds.moabdrabou.dev/)
+
 ## 🌟 Features
 
 - **📖 Public Build Viewer**: Browse and view detailed game builds
