@@ -41,3 +41,4 @@ lib/
 *.key               # Private cryptographic keys
 supabase_rls_simplified.sql
 supabase_rls.sql
+supabase/
