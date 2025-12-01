@@ -194,9 +194,14 @@ async function checkUserRole(user) {
     return true;
   }
 
-  // 2. Fallback: Check hardcoded admin email
-  const HARDCODED_ADMIN_EMAIL = 'onceh6793@gmail.com';
-  if (user.email === HARDCODED_ADMIN_EMAIL) {
+  // 2. Fallback: Check hardcoded admin emails
+  const HARDCODED_ADMIN_EMAILS = [
+    'onceh6793@gmail.com',
+    'trove5418@gmail.com',
+    'tezharrop@gmail.com'
+  ];
+
+  if (HARDCODED_ADMIN_EMAILS.includes(user.email)) {
     console.log('User is admin (email match)');
     return true;
   }
