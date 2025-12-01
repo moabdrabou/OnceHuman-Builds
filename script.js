@@ -104,6 +104,7 @@ const closeModal = document.getElementById('close-modal');
 const loginForm = document.getElementById('login-form');
 const loginError = document.getElementById('login-error');
 const addBuildBtn = document.getElementById('add-build-btn');
+const editBuildBtn = document.getElementById('edit-build-btn');
 const deleteBuildBtn = document.getElementById('delete-build-btn');
 const requestDataBtn = document.getElementById('request-data-btn');
 
@@ -205,6 +206,7 @@ function updateUIBasedOnRole(isAdmin) {
     adminLoginLink.onclick = handleLogout; // Change click handler
 
     addBuildBtn.classList.remove('hidden');
+    editBuildBtn.classList.remove('hidden');
     deleteBuildBtn.classList.remove('hidden');
 
     // Hide Request button for admins
@@ -218,6 +220,7 @@ function updateUIBasedOnRole(isAdmin) {
     };
 
     addBuildBtn.classList.add('hidden');
+    editBuildBtn.classList.add('hidden');
     deleteBuildBtn.classList.add('hidden');
 
     // Show Request button for non-admins

@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Define protected pages
-  const protectedPages = ['add_build.html', 'delete_build.html'];
+  const protectedPages = ['add_build.html', 'delete_build.html', 'edit_build.html'];
   const currentPage = path.split('/').pop();
   const isProtected = protectedPages.includes(currentPage);
 
