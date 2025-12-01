@@ -194,4 +194,4 @@ This project is for personal use and game build tracking.
 
 ---
 
-**Built with**: Vanilla JavaScript • Supabase • PostgreSQL
+**Built with**: Vanilla JavaScript • Supabase 
