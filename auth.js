@@ -29,11 +29,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   console.log('auth.js: Session found:', !!session);
 
-  // Check if this is a protected page and user is not authenticated
-  if (isProtected && !session) {
-    alert('⚠️ Access Denied\n\nYou must be logged in to access this page.');
-    window.location.href = 'index.html';
-    return;
+  // Check if this is a protected page
+  if (isProtected) {
+    if (!session) {
+      alert('⚠️ Access Denied\n\nYou must be logged in to access this page.');
+      window.location.href = 'index.html';
+      return;
+    }
+
+    // Check for is_admin metadata
+    const isAdmin = session.user?.user_metadata?.is_admin === true;
+    if (!isAdmin) {
+      console.log('auth.js: User is logged in but NOT admin. Redirecting...');
+      alert('⚠️ Access Denied\n\nYou do not have permission to access this page.');
+      window.location.href = 'index.html';
+      return;
+    }
   }
 
   if (session) {

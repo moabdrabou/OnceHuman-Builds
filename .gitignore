@@ -39,6 +39,9 @@ lib/
 # ----------------------------------------
 .env                # Local environment variables and credentials
 *.key               # Private cryptographic keys
-supabase_rls_simplified.sql
-supabase_rls.sql
+
+# ----------------------------------------
+# 5. Database Files
+# ----------------------------------------
+*.sql
 supabase/
