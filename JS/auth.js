@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (isProtected) {
     if (!session) {
       alert('⚠️ Access Denied\n\nYou must be logged in to access this page.');
-      window.location.href = 'index.html';
+      window.location.href = '../index.html';
       return;
     }
 
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!isAdmin) {
       console.log('auth.js: User is logged in but NOT admin. Redirecting...');
       alert('⚠️ Access Denied\n\nYou do not have permission to access this page.');
-      window.location.href = 'index.html';
+      window.location.href = '../index.html';
       return;
     }
   }
@@ -55,11 +55,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       e.preventDefault();
       await supabaseClient.auth.signOut();
       alert('Logged out');
-      window.location.href = 'index.html';
+      window.location.href = '../index.html';
     };
   } else {
     console.log('auth.js: Setting link to Admin Login');
     adminLoginLink.textContent = 'Admin Login';
-    adminLoginLink.href = 'index.html';
+    adminLoginLink.href = '../index.html';
   }
 });

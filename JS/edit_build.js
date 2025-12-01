@@ -338,7 +338,7 @@ async function updateBuild() {
     await Promise.all(promises);
 
     alert('Build updated successfully!');
-    window.location.href = 'index.html';
+    window.location.href = '../index.html';
 
   } catch (err) {
     console.error('Error updating build:', err);

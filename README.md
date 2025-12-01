@@ -164,17 +164,19 @@ git push origin main
 ```
 OnceHuman-Builds/
 ├── index.html              # Main build viewer
-├── add_build.html          # Build creation form (protected)
-├── edit_build.html         # Build editing form (protected)
-├── delete_build.html       # Build deletion interface (protected)
 ├── request_data.html       # Public data request form
-├── config.js               # Supabase client initialization
-├── script.js               # Index page logic + admin auth
-├── auth.js                 # Shared auth logic + route guards
-├── add_build.js            # Add build form logic
-├── edit_build.js           # Edit build form logic
-├── delete_build.js         # Delete build logic
 ├── styles.css              # Dark theme styling
+├── JS/
+│   ├── config.js           # Supabase client initialization
+│   ├── script.js           # Index page logic + admin auth
+│   ├── auth.js             # Shared auth logic + route guards
+│   ├── add_build.js        # Add build form logic
+│   ├── edit_build.js       # Edit build form logic
+│   └── delete_build.js     # Delete build logic
+├── Protected/
+│   ├── add_build.html      # Build creation form (admin only)
+│   ├── edit_build.html     # Build editing form (admin only)
+│   └── delete_build.html   # Build deletion interface (admin only)
 └── README.md               # This file
 ```
 

@@ -288,7 +288,7 @@ async function saveBuild() {
     await Promise.all(promises);
 
     alert('Build saved successfully!');
-    window.location.href = 'index.html'; // Redirect to home
+    window.location.href = '../index.html'; // Redirect to home
 
   } catch (err) {
     console.error('Error saving build:', err);
