@@ -9,6 +9,7 @@ A web application for creating, viewing, and managing player builds for the game
 - **📖 Public Build Viewer**: Browse and view detailed game builds
 - **🔐 Admin Authentication**: Secure login using Supabase Auth
 - **➕ Add Builds**: Authenticated users can create new builds with detailed gear, abilities, and cradle configurations
+- **✏️ Edit Builds**: Admins can modify existing builds
 - **🗑️ Delete Builds**: Remove outdated or incorrect builds
 - **📝 Request Data**: Public form for users to request missing builds or data
 - **🛡️ Row-Level Security**: Database-level access control ensures data integrity
@@ -100,7 +101,7 @@ Builds (1) ──────────── (1) Calibration
 ### User Roles
 - **Public Users**: Can view all builds and submit data requests
 - **Authenticated Users**: Can create and delete builds
-- **Admin Users**: (Future) Additional permissions via `user_metadata.is_admin`
+- **Admin Users**: Identified by `user_metadata.is_admin = true`
 
 ### Row-Level Security (RLS)
 All tables enforce PostgreSQL RLS policies:
@@ -108,8 +109,9 @@ All tables enforce PostgreSQL RLS policies:
 - **INSERT/UPDATE/DELETE**: Requires authentication (`auth.uid() IS NOT NULL`)
 
 ### Protected Pages
-- `add_build.html`: Requires authentication
-- `delete_build.html`: Requires authentication
+- `add_build.html`: Requires Admin Authentication
+- `edit_build.html`: Requires Admin Authentication
+- `delete_build.html`: Requires Admin Authentication
 - Unauthenticated access redirects to `index.html` with alert
 
 ## 🚀 Local Development
@@ -163,12 +165,14 @@ git push origin main
 OnceHuman-Builds/
 ├── index.html              # Main build viewer
 ├── add_build.html          # Build creation form (protected)
+├── edit_build.html         # Build editing form (protected)
 ├── delete_build.html       # Build deletion interface (protected)
 ├── request_data.html       # Public data request form
 ├── config.js               # Supabase client initialization
 ├── script.js               # Index page logic + admin auth
 ├── auth.js                 # Shared auth logic + route guards
 ├── add_build.js            # Add build form logic
+├── edit_build.js           # Edit build form logic
 ├── delete_build.js         # Delete build logic
 ├── styles.css              # Dark theme styling
 └── README.md               # This file
@@ -194,4 +198,4 @@ This project is for personal use and game build tracking.
 
 ---
 
-**Built with**: Vanilla JavaScript • Supabase 
+**Built with**: Vanilla JavaScript • Supabase • PostgreSQL • GitHub Pages
