@@ -635,7 +635,6 @@ select:focus {
 
 /* Equipment Slot Styling */
 .gear-table select {
-    background: rgba(68, 71, 90, 0.5);
     border-color: rgba(98, 114, 164, 0.5);
     font-size: 0.9rem;
     padding: 10px 12px;
