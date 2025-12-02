@@ -700,7 +700,7 @@ select:focus {
 .update-btn-primary:hover {
     transform: translateY(-3px) scale(1.02);
     box-shadow:
-        0 8px 25px rgba(189, 147, 249, 0.6),
+        0 8px 25px rgba(0, 0, 0, 0.6),
         0 0 50px rgba(255, 121, 198, 0.4),
         inset 0 -2px 10px rgba(0, 0, 0, 0.3);
     filter: brightness(1.15);
@@ -843,7 +843,6 @@ select:focus {
 
 .control-panel label {
     font-family: 'Rajdhani', sans-serif;
-    font-size: 1rem;
     font-weight: 600;
     letter-spacing: 1px;
     color: var(--secondary-text);
@@ -879,4 +878,12 @@ select:focus {
     .module-header {
         font-size: 0.9rem;
     }
+}
+
+.gear-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 8px;
+    filter: drop-shadow(0 0 3px rgba(189, 147, 249, 0.5)); /* Adds a subtle glow */
 }

@@ -3,13 +3,15 @@
 
 // Icons (Simple SVGs)
 const icons = {
-  "Helmet": '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4a7 7 0 0 0-7 7v4l7 5 7-5v-4a7 7 0 0 0-7-7z"></path></svg>',
-  "Jacket": '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.4a1.6 1.6 0 0 0-1.58-.68l-4.94 1.06a1.2 1.2 0 0 1-1.12-.34L12 3l-.74.44a1.2 1.2 0 0 1-1.12.34L5.2 2.72a1.6 1.6 0 0 0-1.58.68L2 7l5 3v11h10V10l5-3z"></path></svg>',
-  "Pants": '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--highlight)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 2H8a2 2 0 0 0-2 2v18h4v-7h4v7h4V4a2 2 0 0 0-2-2z"></path></svg>',
-  "Boots": '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V12l-5-5H9L4 12v8a2 2 0 0 0 0 2z"></path></svg>',
-  "Gloves": '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"></path><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path></svg>',
-  "Mask": '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12a5 5 0 0 0 5 5 8 8 0 0 1 5 2 8 8 0 0 1 5-2 5 5 0 0 0 5-5V7h-5a8 8 0 0 0-5 2 8 8 0 0 0-5-2H2z"></path></svg>',
-  "Weapon": '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--yellow)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"></polyline><line x1="13" y1="19" x2="19" y2="13"></line><line x1="16" y1="16" x2="20" y2="20"></line><line x1="19" y1="21" x2="21" y2="19"></line></svg>'
+  "Helmet": '<img src="icons/robot-helmet.svg" alt="Helmet Icon" class="gear-icon">',
+  "Jacket": '<img src="icons/kevlar-vest.svg" alt="Jacket Icon" class="gear-icon">',
+  "Pants": '<img src="icons/trousers.svg" alt="Pants Icon" class="gear-icon">',
+  "Boots": '<img src="icons/boots.svg" alt="Boots Icon" class="gear-icon">',
+  "Gloves": '<img src="icons/gauntlet.svg" alt="Gloves Icon" class="gear-icon">',
+  "Mask": '<img src="icons/gas-mask.svg" alt="Mask Icon" class="gear-icon">',
+  "Weapon 1": '<img src="icons/ak47.svg" alt="Weapon 1 Icon" class="gear-icon">',
+  "Weapon 2": '<img src="icons/glock.svg" alt="Weapon 2 Icon" class="gear-icon">',
+  "Melee": '<img src="icons/bowie-knife.svg" alt="Melee Icon" class="gear-icon">'
 };
 
 // DOM Elements
@@ -335,10 +337,7 @@ function renderBuild(build) {
 
       // Get Icon
       // Normalize slot name to match keys (e.g. "Weapon 1" -> "Weapon")
-      let iconKey = item.slot;
-      if (item.slot && item.slot.includes('Weapon')) iconKey = 'Weapon';
-
-      const iconSvg = icons[iconKey] || '';
+      const iconSvg = icons[formatSlotName(item.slot)] || '';
 
       row.innerHTML = `
             <td>
