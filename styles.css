@@ -573,24 +573,19 @@ select {
     font-size: 0.95rem;
     border-radius: 6px;
     border: 1px solid var(--border-color);
-    background:
-        linear-gradient(135deg, rgba(40, 42, 54, 0.9) 0%, rgba(68, 71, 90, 0.7) 100%);
+    background: var(--bg-color);
     color: var(--text-color);
     cursor: pointer;
     transition: all 0.3s ease;
     outline: none;
     width: 100%;
     box-sizing: border-box;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .dropdown-enhanced:hover,
 select.input-field:hover,
 select:hover {
     border-color: var(--accent-color);
-    box-shadow:
-        0 0 15px rgba(189, 147, 249, 0.3),
-        inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .dropdown-enhanced:focus,
@@ -599,8 +594,7 @@ select:focus {
     border-color: var(--highlight);
     box-shadow:
         0 0 20px rgba(255, 121, 198, 0.4),
-        0 0 0 3px rgba(255, 121, 198, 0.1),
-        inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        0 0 0 3px rgba(255, 121, 198, 0.1);
 }
 
 /* Enhanced Gear Table */
@@ -726,14 +720,13 @@ select:focus {
 /* Enhanced Input Fields */
 .input-field {
     font-family: 'Inter', sans-serif;
-    background: rgba(40, 42, 54, 0.6);
+    background: var(--bg-color);
     border: 1px solid var(--border-color);
     border-radius: 6px;
     padding: 12px 16px;
     color: var(--text-color);
     font-size: 0.95rem;
     transition: all 0.3s ease;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .input-field:hover {
@@ -747,8 +740,7 @@ select:focus {
     background: rgba(68, 71, 90, 0.8);
     box-shadow:
         0 0 20px rgba(255, 121, 198, 0.3),
-        0 0 0 3px rgba(255, 121, 198, 0.1),
-        inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        0 0 0 3px rgba(255, 121, 198, 0.1);
 }
 
 /* Build Header Module Special Styling */
