@@ -361,23 +361,7 @@ select {
     font-style: italic;
 }
 
-/* Admin Login Link */
-.admin-login-link {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    color: var(--accent-color);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: color 0.3s;
-    z-index: 1000;
-}
-
-.admin-login-link:hover {
-    color: var(--highlight);
-    text-decoration: underline;
-}
+/* Admin Login Link styles removed as it is now a button in the control panel */
 
 /* Modal Styling */
 .modal {
@@ -571,6 +555,10 @@ select {
     outline: none;
     width: 100%;
     box-sizing: border-box;
+    appearance: none;
+    /* Remove default browser styling */
+    -webkit-appearance: none;
+    /* For Safari */
 }
 
 .dropdown-enhanced:hover,
@@ -635,6 +623,7 @@ select:focus {
 
 /* Equipment Slot Styling */
 .gear-table select {
+    background: var(--bg-color);
     border-color: rgba(98, 114, 164, 0.5);
     font-size: 0.9rem;
     padding: 10px 12px;
@@ -690,10 +679,6 @@ select:focus {
     filter: brightness(1.15);
 }
 
-.update-btn-primary:hover::before {
-    left: 100%;
-}
-
 .update-btn-primary:active {
     transform: translateY(-1px) scale(1);
     box-shadow:
@@ -721,13 +706,15 @@ select:focus {
 
 .input-field:hover {
     border-color: var(--accent-color);
-    background: rgba(68, 71, 90, 0.6);
+    background: var(--bg-color);
+    /* Use solid color */
 }
 
 .input-field:focus {
     outline: none;
     border-color: var(--highlight);
-    background: rgba(68, 71, 90, 0.8);
+    background: var(--bg-color);
+    /* Use solid color */
     box-shadow:
         0 0 20px rgba(255, 121, 198, 0.3),
         0 0 0 3px rgba(255, 121, 198, 0.1);
@@ -857,4 +844,21 @@ select:focus {
     margin-right: 8px;
     filter: drop-shadow(0 0 3px rgba(189, 147, 249, 0.5));
     /* Adds a subtle glow */
+}
+
+.left-col .module-card {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    margin-bottom: 0;
+}
+
+.left-col .module-card .info-group {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.left-col .module-card .grid-container {
+    flex-grow: 1;
 }

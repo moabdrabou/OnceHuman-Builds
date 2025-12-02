@@ -19,16 +19,17 @@
 <body>
 
   <div class="container">
+    <!-- Admin Login Link moved to control-panel -->
     <h1>Edit Build</h1>
 
-    <!-- Admin Login Link -->
-    <a href="#" id="admin-login-link" class="admin-login-link">Admin Login</a>
-
     <div class="control-panel">
-      <a href="../index.html" class="btn">Back to Home</a>
+      <div class="nav-buttons">
+        <a href="../index.html" class="btn">Back to Home</a>
+        <a href="#" id="admin-login-link" class="btn">Admin Login</a>
+      </div>
       <div id="build-selector-container" class="form-group" style="margin-top: 15px;">
         <label for="build-select">Select Build to Edit:</label>
-        <select id="build-select" class="input-field">
+        <select id="build-select">
           <option value="" disabled selected>-- Loading Builds --</option>
         </select>
       </div>
@@ -46,7 +47,7 @@
         <div class="left-col">
           <div class="module-card cradle-module">
             <div class="info-group">
-              <span class="label module-header"><i data-lucide="grid-3x3" class="label-icon"></i>// CRADLE MATRIX</span>
+              <span class="label module-header"><i data-lucide="grid-3x3" class="label-icon"></i>CRADLE MATRIX</span>
               <div id="cradle-container" class="grid-container">
                 <!-- Populated by JS -->
               </div>
@@ -57,7 +58,7 @@
         <div class="right-col">
           <div class="module-card abilities-module">
             <div class="info-group">
-              <span class="label module-header"><i data-lucide="zap" class="label-icon"></i>// KEY ABILITIES</span>
+              <span class="label module-header"><i data-lucide="zap" class="label-icon"></i>KEY ABILITIES</span>
               <div id="abilities-container" class="list-container">
                 <!-- Populated by JS -->
               </div>
@@ -65,7 +66,7 @@
           </div>
           <div class="module-card calibration-module">
             <div class="info-group">
-              <span class="label module-header"><i data-lucide="settings" class="label-icon"></i>// CALIBRATION</span>
+              <span class="label module-header"><i data-lucide="settings" class="label-icon"></i>CALIBRATION</span>
               <select id="calibration-select" class="dropdown-enhanced">
                 <option value="" disabled selected>Loading...</option>
               </select>
@@ -77,7 +78,7 @@
       <div class="bottom-section">
         <div class="module-card gear-module">
           <div class="info-group">
-            <span class="label module-header"><i data-lucide="shield" class="label-icon"></i>// EQUIPMENT LOADOUT</span>
+            <span class="label module-header"><i data-lucide="shield" class="label-icon"></i>EQUIPMENT LOADOUT</span>
             <table class="gear-table">
               <thead>
                 <tr>
