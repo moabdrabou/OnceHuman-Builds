@@ -856,5 +856,6 @@ select:focus {
     height: 20px;
     vertical-align: middle;
     margin-right: 8px;
-    filter: drop-shadow(0 0 3px rgba(189, 147, 249, 0.5)); /* Adds a subtle glow */
+    filter: drop-shadow(0 0 3px rgba(189, 147, 249, 0.5));
+    /* Adds a subtle glow */
 }
