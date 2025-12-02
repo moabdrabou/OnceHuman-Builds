@@ -113,18 +113,9 @@ select {
     font-size: 1rem;
     border-radius: 6px;
     border: 1px solid var(--border-color);
-    background-color: #333;
-    color: white;
     cursor: pointer;
     transition: border-color 0.3s, box-shadow 0.3s;
     outline: none;
-    min-width: 250px;
-}
-
-select:hover,
-select:focus {
-    border-color: var(--accent-color);
-    box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.2);
 }
 
 /* Layout Styling */
@@ -157,13 +148,16 @@ select:focus {
 }
 
 .label {
+    font-family: 'Rajdhani', sans-serif;
     font-weight: 600;
     color: var(--accent-color);
-    display: block;
-    margin-bottom: 5px;
-    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1.5px;
 }
 
 .value {
@@ -331,12 +325,9 @@ li {
     padding: 10px;
     border-radius: 6px;
     border: 1px solid var(--border-color);
-    background-color: #333;
-    color: var(--text-color);
     font-size: 0.95rem;
     width: 100%;
     box-sizing: border-box;
-    transition: border-color 0.3s;
 }
 
 .input-field:focus {
@@ -777,19 +768,7 @@ select:focus {
     background: linear-gradient(135deg, var(--green) 0%, var(--cyan) 100%);
 }
 
-/* Label Enhancements */
-.label {
-    font-family: 'Rajdhani', sans-serif;
-    font-weight: 600;
-    color: var(--accent-color);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-    font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-}
+
 
 /* Animation for Page Load */
 @keyframes moduleSlideIn {
