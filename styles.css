@@ -423,11 +423,6 @@ select {
     min-height: 1.2em;
 }
 
-/* ===================================
-   ENHANCED UI STYLES
-   Post-Apocalyptic Sci-Fi Theme
-   =================================== */
-
 /* Module Card System */
 .module-card {
     background: linear-gradient(135deg, rgba(68, 71, 90, 0.6) 0%, rgba(40, 42, 54, 0.8) 100%);
@@ -861,4 +856,99 @@ select:focus {
 
 .left-col .module-card .grid-container {
     flex-grow: 1;
+}
+
+/* Mobile Optimization for Gear Table */
+@media (max-width: 768px) {
+
+    .gear-table,
+    .gear-table tbody,
+    .gear-table tr,
+    .gear-table td {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .gear-table thead {
+        display: none;
+        /* Hide standard headers */
+    }
+
+    .gear-table tr {
+        margin-bottom: 20px;
+        background: rgba(40, 42, 54, 0.4);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .gear-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: right;
+        padding: 12px 15px;
+        border-bottom: 1px solid rgba(98, 114, 164, 0.2);
+        min-height: 40px;
+        /* Ensure touch target size */
+    }
+
+    .gear-table td:last-child {
+        border-bottom: none;
+    }
+
+    /* Slot Header (First Column) */
+    .gear-table td:first-child {
+        background: linear-gradient(90deg, rgba(68, 71, 90, 0.8) 0%, rgba(40, 42, 54, 0.8) 100%);
+        color: var(--accent-color);
+        font-weight: 700;
+        letter-spacing: 1px;
+        border-bottom: 1px solid var(--border-color);
+        justify-content: flex-start;
+        /* Align icon/text to left */
+    }
+
+    /* Add Labels via ::before */
+    .gear-table td:nth-of-type(2)::before {
+        content: "Hide";
+        font-weight: 600;
+        color: var(--secondary-text);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        margin-right: auto;
+        /* Push label to left */
+    }
+
+    .gear-table td:nth-of-type(3)::before {
+        content: "Item";
+        font-weight: 600;
+        color: var(--secondary-text);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        margin-right: auto;
+    }
+
+    .gear-table td:nth-of-type(4)::before {
+        content: "Mod";
+        font-weight: 600;
+        color: var(--secondary-text);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        margin-right: auto;
+    }
+
+    /* Hide empty cells (like Hide column for weapons) */
+    .gear-table td:empty {
+        display: none;
+    }
+
+    /* Fix for Select inputs in Add Build page */
+    .gear-table select,
+    .gear-table input {
+        width: 60%;
+        /* Give inputs some space but let label show */
+        max-width: 200px;
+    }
 }
