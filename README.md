@@ -1,198 +1,231 @@
 # 🎮 Once Human - Build Tracker
 
-A web application for creating, viewing, and managing player builds for the game *Once Human*. Features admin authentication, role-based access control, and a fully normalized database structure.
+A full-stack **Next.js** web application for creating, viewing, and managing player builds for the game *Once Human*. Features a cyberpunk / military-tech UI aesthetic, admin authentication, role-based access control, and a fully normalized Supabase database.
 
 **🌐 Live Demo**: [https://ohbuilds.moabdrabou.dev/](https://ohbuilds.moabdrabou.dev/)
 
+---
+
 ## 🌟 Features
 
-- **📖 Public Build Viewer**: Browse and view detailed game builds
-- **🔐 Admin Authentication**: Secure login using Supabase Auth
-- **➕ Add Builds**: Authenticated users can create new builds with detailed gear, abilities, and cradle configurations
-- **✏️ Edit Builds**: Admins can modify existing builds
-- **🗑️ Delete Builds**: Remove outdated or incorrect builds
-- **📝 Request Data**: Public form for users to request missing builds or data
-- **🛡️ Row-Level Security**: Database-level access control ensures data integrity
-- **📱 Responsive Design**: Dark themed UI that works across devices
+- **📖 Public Build Viewer**: Browse and filter all builds with live search and element-type filtering
+- **🔎 Neural Search**: Real-time search across build names, gear, and calibration data
+- **🔐 Admin Authentication**: Secure login via Supabase Auth with `is_admin` metadata guard
+- **➕ Add Build**: Dynamic form that fetches all master-list options from Supabase and performs multi-table relational inserts
+- **✏️ Edit Build**: Admins can modify any existing build's full loadout
+- **🗑️ Delete Build**: Multi-step relational deletion — clears abilities, cradle, and gear before removing the root build record
+- **🛡️ Row-Level Security**: PostgreSQL RLS policies enforce data integrity at the database level
+- **📱 Responsive Design**: Dark "Cyber-Apocalyptic" theme built with Tailwind CSS v4
+
+---
 
 ## 🏗️ Architecture
 
-### Frontend (Static HTML/JS)
-- **Static Pages**: Pure HTML/CSS/JavaScript (deployable to GitHub Pages)
-- **Supabase Client**: Uses CDN-loaded `@supabase/supabase-js` for database and auth
-- **Session Persistence**: localStorage-based authentication across pages
-- **Protected Routes**: Client-side guards for admin-only pages
+### Frontend (Next.js App Router)
+- **Framework**: Next.js 16 with the App Router (`app/` directory)
+- **Language**: TypeScript 5.7
+- **Styling**: Tailwind CSS v4 + custom CSS animations (glassmorphism, glitch effects, scan lines)
+- **Font**: JetBrains Mono (Google Fonts) for the tactical/terminal aesthetic
+- **UI Primitives**: Radix UI component library + Lucide React icons
+- **State**: React hooks (`useState`, `useMemo`, custom hooks for data fetching)
+- **Analytics**: Vercel Analytics
 
 ### Backend (Supabase)
-- **PostgreSQL Database**: Fully normalized schema with 11 tables
-- **Authentication**: Email/password login with session management
-- **Row-Level Security**: Public read access, authenticated write access
-- **Real-time Sync**: Automatic session restoration across page navigations
+- **Database**: PostgreSQL (fully normalized, 11 tables)
+- **Auth**: Email/password login with `user_metadata.is_admin` custom claim
+- **RLS**: Public SELECT, authenticated-only INSERT/UPDATE/DELETE
+- **Client**: `@supabase/supabase-js` v2 initialized in `lib/supabase.ts`
 
-## 📊 Database Schema
-
-### Core Tables
-
-#### `Builds`
-Stores the core build identity.
-- **PK**: `id` (UUID)
-- **FK**: `calibration_id` → `calibration.id`
-- **Fields**: `build_name`, `calibration_id`
-
-#### `Build_Gear`
-Central assignment table linking 9 gear slots to builds.
-- **Composite PK**: `(build_id, slot_name)`
-- **FKs**: 
-  - `build_id` → `builds.id`
-  - `mod_id` → `mod_master_list.id`
-  - `hide_material_id` → `hide_master_list.id`
-  - `weapon_id` → `weapon_master_list.id` (for weapon slots)
-  - `gear_set_id` → `gear_set_master_list.id` (for armor slots)
-- **Slots**: `helmet`, `jacket`, `pants`, `boots`, `gloves`, `mask`, `weapon_1`, `weapon_2`, `melee`
-
-#### `Build_Cradle`
-Links 8 Cradle Override items to builds.
-- **Composite PK**: `(build_id, item_slot)`
-- **FKs**: 
-  - `build_id` → `builds.id`
-  - `cradle_item_id` → `cradle_master_list.id`
-
-#### `Build_Ability_Assignment`
-Links 3 major abilities (by rank) to builds.
-- **Composite PK**: `(build_id, ability_rank)`
-- **FKs**: 
-  - `build_id` → `builds.id`
-  - `ability_master_id` → `ability_master_list.id`
-
-### Master List Tables (Normalized Data)
-
-| Table | Purpose |
-|-------|---------|
-| `Calibration` | Weapon calibration setups |
-| `Cradle_Master_List` | Cradle override names |
-| `Mod_Master_List` | Mod names/suffixes |
-| `Hide_Master_List` | Hide material names |
-| `Weapon_Master_List` | Weapon names |
-| `Gear_Set_Master_List` | Gear set names |
-| `Ability_Master_List` | Core ability names |
-
-### Relationships
-
-```
-Builds (1) ──────────── (1) Calibration
-   │
-   ├──────── (1:N) ────── Build_Gear ──────── (N:1) ────── Gear_Set_Master_List
-   │                          │                                  Weapon_Master_List
-   │                          │                                  Mod_Master_List
-   │                          │                                  Hide_Master_List
-   │
-   ├──────── (1:N) ────── Build_Cradle ────── (N:1) ────── Cradle_Master_List
-   │
-   └──────── (1:N) ────── Build_Ability_Assignment ─ (N:1) ─ Ability_Master_List
-```
-
-**Key Design Principles:**
-1. **No Redundant Data**: All reusable data (mods, hides, weapons) stored once in master lists
-2. **Gear vs. Weapon**: Each `Build_Gear` row uses either `gear_set_id` (armor) OR `weapon_id` (weapons), never both
-3. **Calibration Reuse**: Multiple builds can reference the same calibration configuration
-
-## 🔐 Authentication & Security
-
-### User Roles
-- **Public Users**: Can view all builds and submit data requests
-- **Authenticated Users**: Can create and delete builds
-- **Admin Users**: Identified by `user_metadata.is_admin = true`
-
-### Row-Level Security (RLS)
-All tables enforce PostgreSQL RLS policies:
-- **SELECT**: Public access (anyone can read)
-- **INSERT/UPDATE/DELETE**: Requires authentication (`auth.uid() IS NOT NULL`)
-
-### Protected Pages
-- `add_build.html`: Requires Admin Authentication
-- `edit_build.html`: Requires Admin Authentication
-- `delete_build.html`: Requires Admin Authentication
-- Unauthenticated access redirects to `index.html` with alert
-
-## 🚀 Local Development
-
-### Prerequisites
-- Python 3.x (for local server)
-- Modern web browser
-- Supabase account (already configured)
-
-### Running Locally
-
-**Important**: You must use an HTTP server (not `file://`) for session persistence to work.
-
-```bash
-# Navigate to project directory
-cd /path/to/OnceHuman-Builds
-
-# Start local server
-python3 -m http.server 8000
-
-# Open in browser
-# http://localhost:8000/index.html
-```
-
-**Why HTTP server is required**: The `file://` protocol isolates localStorage between HTML files for security. An HTTP server provides a common origin (`http://localhost:8000`) allowing session sharing across pages.
-
-## 📦 Deployment (GitHub Pages)
-
-```bash
-# 1. Commit changes
-git add .
-git commit -m "Deploy build tracker"
-
-# 2. Push to GitHub
-git push origin main
-
-# 3. Enable GitHub Pages
-# Go to repo Settings → Pages
-# Source: Deploy from branch 'main'
-# Folder: / (root)
-
-# 4. Access at:
-# https://[username].github.io/OnceHuman-Builds/
-```
-
-**Session Persistence on GitHub Pages**: Works automatically because all pages share the same `https://` origin.
+---
 
 ## 📁 File Structure
 
 ```
 OnceHuman-Builds/
-├── index.html              # Main build viewer
-├── request_data.html       # Public data request form
-├── styles.css              # Dark theme styling
-├── JS/
-│   ├── config.js           # Supabase client initialization
-│   ├── script.js           # Index page logic + admin auth
-│   ├── auth.js             # Shared auth logic + route guards
-│   ├── add_build.js        # Add build form logic
-│   ├── edit_build.js       # Edit build form logic
-│   └── delete_build.js     # Delete build logic
-├── Protected/
-│   ├── add_build.html      # Build creation form (admin only)
-│   ├── edit_build.html     # Build editing form (admin only)
-│   └── delete_build.html   # Build deletion interface (admin only)
-└── README.md               # This file
+├── app/
+│   ├── layout.tsx               # Root layout — JetBrains Mono font, AuthProvider, Analytics
+│   ├── page.tsx                 # Main dashboard — build grid, search, filters, detail view
+│   ├── globals.css              # Global styles, CSS variables, custom animations
+│   └── admin/
+│       ├── add/page.tsx         # Add Build form (fetches all master lists, relational insert)
+│       ├── delete/page.tsx      # Purge Build page (multi-step relational deletion)
+│       └── edit/
+│           ├── page.tsx         # Edit Build — build picker
+│           └── [id]/page.tsx    # Edit Build — full loadout form for a specific build
+├── components/
+│   ├── auth-provider.tsx        # Auth context: exposes `user`, `isAdmin`, `loading`
+│   ├── tactical-nav.tsx         # Top navigation bar with admin modal trigger
+│   ├── admin-login-modal.tsx    # Supabase email/password login modal
+│   ├── gear-card.tsx            # Build summary card for the grid view
+│   ├── build-detail.tsx         # Full build loadout breakdown (tactical display)
+│   ├── filter-panel.tsx         # Element-type filter buttons
+│   ├── neural-search.tsx        # Debounced search input
+│   ├── gear-sets-view.tsx       # Gear sets reference page
+│   ├── weapon-database.tsx      # Weapon database reference page
+│   ├── profile-view.tsx         # Player profile view
+│   ├── weapon-icons.tsx         # SVG weapon icon components
+│   └── ui/                      # Radix UI-based shadcn/ui components
+├── hooks/
+│   ├── use-builds.ts            # Fetches and enriches all builds from Supabase
+│   ├── use-build-actions.ts     # Add / edit / delete build mutations
+│   ├── use-master-data.ts       # Fetches all master list tables in parallel
+│   ├── use-mobile.ts            # Mobile breakpoint detection
+│   └── use-toast.ts             # Toast notification hook
+├── lib/
+│   └── supabase.ts              # Supabase client singleton
+├── public/
+│   └── OH16x16.png              # Favicon
+├── styles/
+│   └── globals.css              # (legacy, merged into app/globals.css)
+├── next.config.mjs              # Next.js config
+├── tsconfig.json                # TypeScript config
+└── package.json
 ```
+
+---
+
+## 📊 Database Schema
+
+### Core Tables
+
+#### `builds`
+Stores the core build identity.
+- **PK**: `id` (UUID)
+- **FK**: `calibration_id` → `calibration.id`
+- **Fields**: `build_name`, `calibration_id`
+
+#### `build_gear`
+Central assignment table linking 9 gear slots to builds.
+- **Composite PK**: `(build_id, slot_name)`
+- **Slots**: `helmet`, `jacket`, `pants`, `boots`, `gloves`, `mask`, `weapon_1`, `weapon_2`, `melee`
+- **FKs**: `build_id`, `mod_id`, `hide_material_id`, `weapon_id` (weapons), `gear_set_id` (armor)
+
+#### `build_cradle`
+Links up to 8 Cradle Override items (by slot index) to a build.
+- **Composite PK**: `(build_id, item_slot)`
+
+#### `build_ability_assignment`
+Links up to 3 key abilities (by rank) to a build.
+- **Composite PK**: `(build_id, ability_rank)`
+
+### Master List Tables
+
+| Table | Purpose |
+|-------|---------|
+| `calibration` | Weapon calibration configurations |
+| `cradle_master_list` | Cradle override item names |
+| `mod_master_list` | Mod names |
+| `hide_master_list` | Hide material names |
+| `weapon_master_list` | Weapon names |
+| `gear_set_master_list` | Gear set names |
+| `ability_master_list` | Core ability names |
+
+### Relationships
+
+```
+builds (1) ──────────── (1) calibration
+   │
+   ├──── (1:N) ── build_gear ──────── (N:1) ── gear_set_master_list
+   │                   │                        weapon_master_list
+   │                   │                        mod_master_list
+   │                   │                        hide_master_list
+   │
+   ├──── (1:N) ── build_cradle ────── (N:1) ── cradle_master_list
+   │
+   └──── (1:N) ── build_ability_assignment ─── (N:1) ── ability_master_list
+```
+
+**Key Design Principles:**
+1. **No Redundant Data**: All reusable data stored once in master lists
+2. **Gear vs. Weapon**: Each `build_gear` row uses either `gear_set_id` (armor) OR `weapon_id` (weapons), never both
+3. **Ordered Slots**: Cradle items and abilities are indexed by slot/rank for consistent display order
+
+---
+
+## 🔐 Authentication & Security
+
+### User Roles
+- **Public Users**: Can view all builds and browse the database
+- **Admin Users**: Identified by `user_metadata.is_admin = true` in Supabase Auth
+
+### Route Protection
+All admin pages (`/admin/add`, `/admin/delete`, `/admin/edit`) check `isAdmin` on mount via the `AuthProvider` context. Unauthenticated access triggers an alert and redirects to `/`.
+
+### Row-Level Security (RLS)
+- **SELECT**: Public — anyone can read
+- **INSERT / UPDATE / DELETE**: Requires `auth.uid() IS NOT NULL`
+
+---
+
+## 🚀 Local Development
+
+### Prerequisites
+- Node.js 18+
+- npm
+- A Supabase project (connection details in `.env.local`)
+
+### Setup
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/your-username/OnceHuman-Builds.git
+cd OnceHuman-Builds
+
+# 2. Install dependencies
+npm install
+
+# 3. Create environment file
+cp .env.local.example .env.local
+# Fill in your NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+# 4. Start the dev server
+npm run dev
+# Open http://localhost:3000
+```
+
+### Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start Next.js development server |
+| `npm run build` | Build for production |
+| `npm start` | Start production server |
+| `npm run lint` | Run ESLint |
+
+---
+
+## 📦 Deployment
+
+The app is deployed on **Vercel** (recommended for Next.js). Simply connect the GitHub repository to a Vercel project and set the following environment variables in the Vercel dashboard:
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anonymous/public key |
+
+Vercel will auto-detect the Next.js framework and deploy on every push to `main`.
+
+---
 
 ## 🔧 Troubleshooting
 
-### Session Not Persisting
-- **Problem**: Login works on `index.html` but session is lost on other pages
-- **Solution**: Use HTTP server (`python3 -m http.server`), not `file://` protocol
+### Build Data Not Loading
+- Check that `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are set correctly
+- Open browser DevTools → Console and look for Supabase errors
 
 ### RLS Errors (Code 42501)
-- **Problem**: "new row violates row-level security policy"
-- **Solution**: Ensure you're logged in and session is active. Check browser console for "Config.js - Session loaded: { hasSession: true }"
+- "new row violates row-level security policy"
+- Ensure you are logged in as an admin before attempting write operations
 
-### Protected Page Access
-- **Problem**: Can't access `add_build.html` or `delete_build.html`
-- **Solution**: Log in first on `index.html`. Session must be active.
+### Admin Pages Redirecting to Home
+- Your Supabase user must have `is_admin: true` in `user_metadata`
+- Set this in the Supabase dashboard under **Authentication → Users → Edit User**
+
+### Weapons / Gear Not Appearing in Add Form
+- All master list tables must be populated in Supabase
+- Verify `weapon_master_list`, `gear_set_master_list`, `mod_master_list`, `hide_master_list`, `cradle_master_list`, and `ability_master_list` have rows
+
+---
 
 ## 📝 License
 
@@ -200,4 +233,4 @@ This project is for personal use and game build tracking.
 
 ---
 
-**Built with**: Vanilla JavaScript • Supabase • PostgreSQL • GitHub Pages
+**Built with**: Next.js 16 • React 19 • TypeScript • Tailwind CSS v4 • Supabase • Radix UI • Vercel
