@@ -49,8 +49,7 @@ OnceHuman-Builds/
 │   └── admin/
 │       ├── add/page.tsx         # Add Build form (fetches all master lists, relational insert)
 │       ├── delete/page.tsx      # Purge Build page (multi-step relational deletion)
-│       └── edit/
-│           └── page.tsx         # Edit Build — full loadout form with build picker
+│       └── edit/page.tsx        # Edit Build — full loadout form with build picker
 ├── components/
 │   ├── auth-provider.tsx        # Auth context: exposes `user`, `isAdmin`, `loading`
 │   ├── tactical-nav.tsx         # Top navigation bar with admin modal trigger
