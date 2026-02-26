@@ -28,7 +28,6 @@ A full-stack **Next.js** web application for creating, viewing, and managing pla
 - **Font**: JetBrains Mono (Google Fonts) for the tactical/terminal aesthetic
 - **UI Primitives**: Radix UI component library + Lucide React icons
 - **State**: React hooks (`useState`, `useMemo`, custom hooks for data fetching)
-- **Analytics**: Vercel Analytics
 
 ### Backend (Supabase)
 - **Database**: PostgreSQL (fully normalized, 11 tables)
@@ -194,14 +193,14 @@ npm run dev
 
 ## 📦 Deployment
 
-The app is deployed on **Vercel** (recommended for Next.js). Simply connect the GitHub repository to a Vercel project and set the following environment variables in the Vercel dashboard:
+Build and deploy the app to any Node.js-compatible host. Set the following environment variables on your platform:
 
 | Variable | Description |
 |----------|-------------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anonymous/public key |
 
-Vercel will auto-detect the Next.js framework and deploy on every push to `main`.
+Run `npm run build && npm start` to serve the production build.
 
 ---
 
@@ -231,4 +230,4 @@ This project is for personal use and game build tracking.
 
 ---
 
-**Built with**: Next.js 16 • React 19 • TypeScript • Tailwind CSS v4 • Supabase • Radix UI • Vercel
+**Built with**: Next.js 16 • React 19 • TypeScript • Tailwind CSS v4 • Supabase • Radix UI
