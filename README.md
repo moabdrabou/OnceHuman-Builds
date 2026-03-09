@@ -1,6 +1,6 @@
 # 🎮 Once Human - Build Tracker
 
-A full-stack **Next.js** web application for character builds for the game 'once Human'. Features real-time data fetching via Supabase, optimized React components for gear filtering, and a custom UI for theorycrafting..
+A full-stack **Next.js** web application for character builds for the game 'once Human'. Features real-time data fetching via Supabase, optimized React components for gear filtering, and a custom UI for theorycrafting.
 
 **🌐 Live Demo**: [https://ohbuilds.moabdrabou.dev/](https://ohbuilds.moabdrabou.dev/)
 
