@@ -3,8 +3,10 @@
 import { useAuth } from "@/components/auth-provider"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { ShieldAlert, Plus, Save, Activity, Shield, Sword, Crosshair, Sparkles, Loader2 } from "lucide-react"
+import { Plus, Save, Activity, Shield, Sword, Crosshair, Sparkles, Loader2 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import { CreatableCombobox, type ComboboxOption } from "@/components/admin/creatable-combobox"
+import { resolveValue, resolveValues } from "@/lib/jit-insert"
 
 interface MasterData {
   calibrations: any[]
@@ -16,6 +18,10 @@ interface MasterData {
   weapons: any[]
 }
 
+function toOptions(items: any[], labelKey: string): ComboboxOption[] {
+  return items.map((item) => ({ value: item.id, label: item[labelKey] }))
+}
+
 export default function AdminAddPage() {
   const { isAdmin, loading: authLoading } = useAuth()
   const router = useRouter()
@@ -23,11 +29,12 @@ export default function AdminAddPage() {
   const [masterData, setMasterData] = useState<MasterData | null>(null)
   const [fetchingData, setFetchingData] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [savingStatus, setSavingStatus] = useState("")
 
   // Form State
   const [buildName, setBuildName] = useState("")
   const [calibrationId, setCalibrationId] = useState("")
-  
+
   const [weapon1, setWeapon1] = useState({ id: "", modId: "" })
   const [weapon2, setWeapon2] = useState({ id: "", modId: "" })
   const [melee, setMelee] = useState({ id: "", modId: "" })
@@ -100,12 +107,42 @@ export default function AdminAddPage() {
 
     setSaving(true)
     try {
-      // 1. Create Build
+      // Phase 1: Resolve all new items into UUIDs via JIT insertion
+      setSavingStatus("Creating new items...")
+
+      const [resolvedCalibration] = await Promise.all([
+        resolveValue("calibration", calibrationId),
+      ])
+
+      const [w1Id, w1Mod, w2Id, w2Mod, meleeId, meleeMod] = await Promise.all([
+        resolveValue("weapon", weapon1.id),
+        resolveValue("mod", weapon1.modId),
+        resolveValue("weapon", weapon2.id),
+        resolveValue("mod", weapon2.modId),
+        resolveValue("weapon", melee.id),
+        resolveValue("mod", melee.modId),
+      ])
+
+      const gearSlots = Object.entries(gear)
+      const gearResolved = await Promise.all(
+        gearSlots.map(async ([, data]) => ({
+          id: await resolveValue("gearSet", data.id),
+          hideId: await resolveValue("hide", data.hideId),
+          modId: await resolveValue("mod", data.modId),
+        })),
+      )
+
+      const resolvedCradle = await resolveValues("cradle", cradle)
+      const resolvedAbilities = await resolveValues("ability", abilities)
+
+      // Phase 2: Create Build
+      setSavingStatus("Deploying build...")
+
       const { data: build, error: buildError } = await supabase
         .from("builds")
-        .insert({ 
+        .insert({
           build_name: buildName,
-          calibration_id: calibrationId || null
+          calibration_id: resolvedCalibration,
         })
         .select()
         .single()
@@ -114,35 +151,37 @@ export default function AdminAddPage() {
 
       const build_id = build.id
 
-      // 2. Insert Gear & Weapons
+      // Phase 3: Insert Gear & Weapons
       const gearInserts = [
-        ...Object.entries(gear).map(([slot, data]) => ({
+        ...gearSlots.map(([slot], i) => ({
           build_id,
           slot_name: slot,
-          gear_set_id: data.id || null,
-          hide_material_id: data.hideId || null,
-          mod_id: data.modId || null
+          gear_set_id: gearResolved[i].id,
+          hide_material_id: gearResolved[i].hideId,
+          mod_id: gearResolved[i].modId,
         })),
-        { build_id, slot_name: "weapon_1", weapon_id: weapon1.id || null, mod_id: weapon1.modId || null },
-        { build_id, slot_name: "weapon_2", weapon_id: weapon2.id || null, mod_id: weapon2.modId || null },
-        { build_id, slot_name: "melee", weapon_id: melee.id || null, mod_id: melee.modId || null }
+        { build_id, slot_name: "weapon_1", weapon_id: w1Id, mod_id: w1Mod },
+        { build_id, slot_name: "weapon_2", weapon_id: w2Id, mod_id: w2Mod },
+        { build_id, slot_name: "melee", weapon_id: meleeId, mod_id: meleeMod },
       ]
 
-      await supabase.from("build_gear").insert(gearInserts.filter(g => g.gear_set_id || g.weapon_id || g.mod_id))
+      await supabase.from("build_gear").insert(
+        (gearInserts as any[]).filter((g) => g.gear_set_id || g.weapon_id || g.mod_id),
+      )
 
-      // 3. Insert Cradle
-      const cradleInserts = cradle
+      // Phase 4: Insert Cradle
+      const cradleInserts = resolvedCradle
         .map((id, index) => ({ build_id, item_slot: index + 1, cradle_item_id: id }))
-        .filter(c => c.cradle_item_id)
-      
+        .filter((c) => c.cradle_item_id)
+
       if (cradleInserts.length > 0) {
         await supabase.from("build_cradle").insert(cradleInserts)
       }
 
-      // 4. Insert Abilities
-      const abilityInserts = abilities
+      // Phase 5: Insert Abilities
+      const abilityInserts = resolvedAbilities
         .map((id, index) => ({ build_id, ability_rank: index + 1, ability_master_id: id }))
-        .filter(a => a.ability_master_id)
+        .filter((a) => a.ability_master_id)
 
       if (abilityInserts.length > 0) {
         await supabase.from("build_ability_assignment").insert(abilityInserts)
@@ -155,6 +194,7 @@ export default function AdminAddPage() {
       alert(`❌ Strategy Failure: ${err.message}`)
     } finally {
       setSaving(false)
+      setSavingStatus("")
     }
   }
 
@@ -170,6 +210,14 @@ export default function AdminAddPage() {
   }
 
   if (!isAdmin) return null
+
+  const weaponOptions = toOptions(masterData?.weapons || [], "weapon_name")
+  const modOptions = toOptions(masterData?.mods || [], "mod_name")
+  const gearSetOptions = toOptions(masterData?.gearSets || [], "set_name")
+  const hideOptions = toOptions(masterData?.hides || [], "material_name")
+  const calibrationOptions = toOptions(masterData?.calibrations || [], "name")
+  const cradleOptions = toOptions(masterData?.cradleItems || [], "item_name")
+  const abilityOptions = toOptions(masterData?.abilities || [], "ability_name")
 
   return (
     <div className="mx-auto max-w-5xl p-6 pb-20 space-y-8">
@@ -206,16 +254,14 @@ export default function AdminAddPage() {
             </div>
             <div className="space-y-2">
               <label className="text-[10px] tracking-widest text-muted-foreground uppercase font-bold">Calibration</label>
-              <select
+              <CreatableCombobox
+                options={calibrationOptions}
                 value={calibrationId}
-                onChange={(e) => setCalibrationId(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-foreground focus:border-primary/50 outline-none transition-all appearance-none"
-              >
-                <option value="">Select Calibration...</option>
-                {masterData?.calibrations.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+                onChange={setCalibrationId}
+                placeholder="Select Calibration..."
+                searchPlaceholder="Search calibrations..."
+                className="py-2 text-sm"
+              />
             </div>
           </div>
         </div>
@@ -236,26 +282,20 @@ export default function AdminAddPage() {
                 <div className="flex items-center">
                   <span className="text-[10px] tracking-widest text-primary uppercase font-bold">{slot.label}</span>
                 </div>
-                <select
+                <CreatableCombobox
+                  options={weaponOptions}
                   value={slot.state.id}
-                  onChange={(e) => slot.setState({ ...slot.state, id: e.target.value })}
-                  className="bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-foreground focus:border-primary/50 outline-none"
-                >
-                  <option value="">Select Weapon...</option>
-                  {masterData?.weapons.map((w) => (
-                    <option key={w.id} value={w.id}>{w.weapon_name}</option>
-                  ))}
-                </select>
-                <select
+                  onChange={(v) => slot.setState({ ...slot.state, id: v })}
+                  placeholder="Select Weapon..."
+                  searchPlaceholder="Search weapons..."
+                />
+                <CreatableCombobox
+                  options={modOptions}
                   value={slot.state.modId}
-                  onChange={(e) => slot.setState({ ...slot.state, modId: e.target.value })}
-                  className="bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-foreground focus:border-primary/50 outline-none"
-                >
-                  <option value="">Select Mod...</option>
-                  {masterData?.mods.map((m) => (
-                    <option key={m.id} value={m.id}>{m.mod_name}</option>
-                  ))}
-                </select>
+                  onChange={(v) => slot.setState({ ...slot.state, modId: v })}
+                  placeholder="Select Mod..."
+                  searchPlaceholder="Search mods..."
+                />
               </div>
             ))}
           </div>
@@ -272,36 +312,27 @@ export default function AdminAddPage() {
               <div key={slot} className="space-y-3 p-4 border border-slate-800 rounded bg-secondary/10">
                 <label className="text-[10px] tracking-widest text-primary uppercase font-bold">{slot}</label>
                 <div className="space-y-2">
-                  <select
+                  <CreatableCombobox
+                    options={gearSetOptions}
                     value={gear[slot].id}
-                    onChange={(e) => setGear({ ...gear, [slot]: { ...gear[slot], id: e.target.value } })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1.5 text-[11px] text-foreground focus:border-primary/50 outline-none transition-all"
-                  >
-                    <option value="">Base Item...</option>
-                    {masterData?.gearSets.map((gs) => (
-                      <option key={gs.id} value={gs.id}>{gs.set_name}</option>
-                    ))}
-                  </select>
-                  <select
+                    onChange={(v) => setGear({ ...gear, [slot]: { ...gear[slot], id: v } })}
+                    placeholder="Base Item..."
+                    searchPlaceholder="Search gear sets..."
+                  />
+                  <CreatableCombobox
+                    options={hideOptions}
                     value={gear[slot].hideId}
-                    onChange={(e) => setGear({ ...gear, [slot]: { ...gear[slot], hideId: e.target.value } })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1.5 text-[11px] text-foreground focus:border-primary/50 outline-none transition-all"
-                  >
-                    <option value="">Hide Material...</option>
-                    {masterData?.hides.map((h) => (
-                      <option key={h.id} value={h.id}>{h.material_name}</option>
-                    ))}
-                  </select>
-                  <select
+                    onChange={(v) => setGear({ ...gear, [slot]: { ...gear[slot], hideId: v } })}
+                    placeholder="Hide Material..."
+                    searchPlaceholder="Search hides..."
+                  />
+                  <CreatableCombobox
+                    options={modOptions}
                     value={gear[slot].modId}
-                    onChange={(e) => setGear({ ...gear, [slot]: { ...gear[slot], modId: e.target.value } })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1.5 text-[11px] text-foreground focus:border-primary/50 outline-none transition-all"
-                  >
-                    <option value="">Armor Mod...</option>
-                    {masterData?.mods.map((m) => (
-                      <option key={m.id} value={m.id}>{m.mod_name}</option>
-                    ))}
-                  </select>
+                    onChange={(v) => setGear({ ...gear, [slot]: { ...gear[slot], modId: v } })}
+                    placeholder="Armor Mod..."
+                    searchPlaceholder="Search mods..."
+                  />
                 </div>
               </div>
             ))}
@@ -320,20 +351,18 @@ export default function AdminAddPage() {
               {cradle.map((val, i) => (
                 <div key={i} className="space-y-1">
                   <label className="text-[9px] tracking-widest text-muted-foreground uppercase">Slot {i + 1}</label>
-                  <select
+                  <CreatableCombobox
+                    options={cradleOptions}
                     value={val}
-                    onChange={(e) => {
+                    onChange={(v) => {
                       const next = [...cradle]
-                      next[i] = e.target.value
+                      next[i] = v
                       setCradle(next)
                     }}
-                    className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1.5 text-[10px] text-foreground focus:border-primary/50 outline-none"
-                  >
-                    <option value="">Select Item...</option>
-                    {masterData?.cradleItems.map((c) => (
-                      <option key={c.id} value={c.id}>{c.item_name}</option>
-                    ))}
-                  </select>
+                    placeholder="Select Item..."
+                    searchPlaceholder="Search cradle..."
+                    className="text-[10px]"
+                  />
                 </div>
               ))}
             </div>
@@ -349,20 +378,17 @@ export default function AdminAddPage() {
               {abilities.map((val, i) => (
                 <div key={i} className="space-y-1">
                   <label className="text-[9px] tracking-widest text-muted-foreground uppercase">Key Ability {i + 1}</label>
-                  <select
+                  <CreatableCombobox
+                    options={abilityOptions}
                     value={val}
-                    onChange={(e) => {
+                    onChange={(v) => {
                       const next = [...abilities]
-                      next[i] = e.target.value
+                      next[i] = v
                       setAbilities(next)
                     }}
-                    className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-foreground focus:border-primary/50 outline-none"
-                  >
-                    <option value="">Select Ability...</option>
-                    {masterData?.abilities.map((a) => (
-                      <option key={a.id} value={a.id}>{a.ability_name}</option>
-                    ))}
-                  </select>
+                    placeholder="Select Ability..."
+                    searchPlaceholder="Search abilities..."
+                  />
                 </div>
               ))}
             </div>
@@ -370,7 +396,7 @@ export default function AdminAddPage() {
         </div>
 
         {/* Submit */}
-        <div className="flex justify-center pt-6">
+        <div className="flex flex-col items-center gap-2 pt-6">
           <button
             type="submit"
             disabled={saving || !buildName}
@@ -384,6 +410,11 @@ export default function AdminAddPage() {
             {saving ? "UPLOADING_DATA..." : "DEPLOY_BUILD"}
             <div className="absolute inset-0 bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
+          {savingStatus && (
+            <p className="text-[10px] tracking-widest text-primary/70 uppercase animate-pulse">
+              {savingStatus}
+            </p>
+          )}
         </div>
       </form>
     </div>
