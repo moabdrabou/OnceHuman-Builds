@@ -14,9 +14,6 @@ __pycache__/
 .python-version
 
 # Dependencies/Packages
-# Python's package install directory
-# The name may vary, but 'lib' or 'site-packages' often get ignored.
-lib/
 /node_modules
 .next/
 /.pnp
@@ -51,6 +48,7 @@ lib/
 # ----------------------------------------
 .claude/           # Directory for Claude AI
 /build             # Build output directory
+/out               # Next.js static export output
 
 # ----------------------------------------
 # 6. Debug
