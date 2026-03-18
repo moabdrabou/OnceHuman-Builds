@@ -1,10 +1,64 @@
-# v0 runtime files
+# ----------------------------------------
+# 1. Operating System Generated Files (macOS/Windows)
+# ----------------------------------------
+.DS_Store           # macOS directory metadata
+*~                  # Generic backup/temp files
+Thumbs.db           # Windows thumbnail cache
+
+# ----------------------------------------
+# 2. Python Specific Files
+# ----------------------------------------
+# Compiled Python files
+__pycache__/
+*.pyc
+.python-version
+
+# Dependencies/Packages
+# Python's package install directory
+# The name may vary, but 'lib' or 'site-packages' often get ignored.
+lib/
+/node_modules
+.next/
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+.mcp.json
+
+# ----------------------------------------
+# 3. IDE and Tooling Files (Important for collaboration)
+# ----------------------------------------
+# Visual Studio Code
+.vscode/
+
+# JetBrains IDEs (PyCharm, IntelliJ)
+.idea/
+*.iml
+
+# ----------------------------------------
+# 4. Sensitive Data (NEVER COMMIT CREDENTIALS)
+# ----------------------------------------
+.env                # Local environment variables and credentials
+.venv/              # Alternative virtual
+.env*.local
+*.key               # Private cryptographic keys
+
+# ----------------------------------------
+# 5. Directories
+# ----------------------------------------
+.claude/           # Directory for Claude AI
+/build             # Build output directory
+
+# ----------------------------------------
+# 6. Debug
+# ----------------------------------------
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*.claude/
 __v0_runtime_loader.js
 __v0_devtools.tsx
 __v0_jsx-dev-runtime.ts
-
-# Common ignores
-node_modules/
-.next/
-.env*.local
-.DS_Store
