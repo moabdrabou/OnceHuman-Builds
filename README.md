@@ -12,6 +12,7 @@ A full-stack **Next.js** web application for character builds for the game 'once
 - **🔎 Neural Search**: Real-time search across build names, gear, and calibration data
 - **🔐 Admin Authentication**: Secure login via Supabase Auth with `is_admin` metadata guard
 - **➕ Add Build**: Dynamic form that fetches all master-list options from Supabase and performs multi-table relational inserts
+- **✨ Just-In-Time (JIT) Master Data**: Admins can create new weapons, mods, gear sets, etc. inline via a creatable combobox — items are inserted into master tables on the fly during build creation/editing
 - **✏️ Edit Build**: Admins can modify any existing build's full loadout
 - **🗑️ Delete Build**: Multi-step relational deletion — clears abilities, cradle, and gear before removing the root build record
 - **🛡️ Row-Level Security**: PostgreSQL RLS policies enforce data integrity at the database level
@@ -30,7 +31,7 @@ A full-stack **Next.js** web application for character builds for the game 'once
 - **State**: React hooks (`useState`, `useMemo`, custom hooks for data fetching)
 
 ### Backend (Supabase)
-- **Database**: PostgreSQL (fully normalized, 11 tables)
+- **Database**: PostgreSQL (fully normalized, 13 tables)
 - **Auth**: Email/password login with `user_metadata.is_admin` custom claim
 - **RLS**: Public SELECT, authenticated-only INSERT/UPDATE/DELETE
 - **Client**: `@supabase/supabase-js` v2 initialized in `lib/supabase.ts`
@@ -50,6 +51,8 @@ OnceHuman-Builds/
 │       ├── delete/page.tsx      # Purge Build page (multi-step relational deletion)
 │       └── edit/page.tsx        # Edit Build — full loadout form with build picker
 ├── components/
+│   ├── admin/
+│   │   └── creatable-combobox.tsx # Searchable combobox with inline "create new" support
 │   ├── auth-provider.tsx        # Auth context: exposes `user`, `isAdmin`, `loading`
 │   ├── tactical-nav.tsx         # Top navigation bar with admin modal trigger
 │   ├── admin-login-modal.tsx    # Supabase email/password login modal
@@ -69,7 +72,8 @@ OnceHuman-Builds/
 │   ├── use-mobile.ts            # Mobile breakpoint detection
 │   └── use-toast.ts             # Toast notification hook
 ├── lib/
-│   └── supabase.ts              # Supabase client singleton
+│   ├── supabase.ts              # Supabase client singleton
+│   └── jit-insert.ts            # JIT master-data resolution (insert-or-fetch by name)
 ├── public/
 │   └── OH16x16.png              # Favicon
 ├── styles/
@@ -136,6 +140,7 @@ builds (1) ──────────── (1) calibration
 1. **No Redundant Data**: All reusable data stored once in master lists
 2. **Gear vs. Weapon**: Each `build_gear` row uses either `gear_set_id` (armor) OR `weapon_id` (weapons), never both
 3. **Ordered Slots**: Cradle items and abilities are indexed by slot/rank for consistent display order
+4. **Unique Name Constraints**: All master list name columns have UNIQUE constraints to prevent duplicates and enable JIT insert deduplication
 
 ---
 

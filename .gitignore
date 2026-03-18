@@ -48,7 +48,8 @@ __pycache__/
 # ----------------------------------------
 .claude/           # Directory for Claude AI
 /build             # Build output directory
-/out               # Next.js static export output
+out/               # Next.js static export output
+prompts/           # Directory for prompt files (if used)
 
 # ----------------------------------------
 # 6. Debug
