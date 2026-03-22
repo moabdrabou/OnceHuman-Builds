@@ -170,7 +170,7 @@ All admin pages (`/admin/add`, `/admin/delete`, `/admin/edit`) check `isAdmin` o
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/OnceHuman-Builds.git
+git clone https://github.com/moabdrabou/OnceHuman-Builds.git
 cd OnceHuman-Builds
 
 # 2. Install dependencies
